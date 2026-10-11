@@ -40,6 +40,18 @@
 **Priority:** P1
 **Depends on:** modernize-ptk3 PR
 
+### Map the remaining support files in the pregate lane config
+
+**What:** Add lanes in `.gstack/pregate.json` for `tests/compat.py`, `tests/__init__.py`, `tests/run_tests.py` and `LICENSE.txt`.
+
+**Why:** gstack's pre-gate cannot trace Python imports, so an edit to one of these files fails the gate with "has no test lane" until it is mapped. It fails closed (nothing slips through), but it blocks /ship on a helper-only change.
+
+**Context:** Found by two reviewers in /ship of revive/triage (2026-10-11); deferred by user decision D7 to avoid a third review cycle. The modernize-ptk3 PR deletes `tests/compat.py` and `tests/run_tests.py`; map `tests/__init__.py` to every test file and `LICENSE.txt` to `[]`.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
 ### Publish a Docker image to GHCR (upstream #51)
 
 **What:** A GitHub Actions job that pushes `ghcr.io/bakerbrandond/saws` on version tags.
