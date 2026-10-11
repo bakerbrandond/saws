@@ -39,3 +39,13 @@ class CommandsTest(unittest.TestCase):
                         continue
         for index, num_results in enumerate(num_results_list):
             assert(len(command_lists[index]) == num_results)
+
+    def test_no_command_type_is_empty(self):
+        # Guards against a data refresh that wipes a section, as happened to
+        # sub_commands in bddc553 and silently broke completion.
+        aws_commands = AwsCommands()
+        for command_type in aws_commands.CommandType:
+            if command_type == aws_commands.CommandType.NUM_TYPES:
+                continue
+            assert len(aws_commands.all_commands[command_type.value]) > 0, \
+                command_type.name

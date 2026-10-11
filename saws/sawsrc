@@ -14,6 +14,12 @@ fuzzy_match = True
 # Use shortcut matching mode
 shortcut_match = True
 
+# Shell used to run commands. Empty (the default) uses /bin/sh. Set a POSIX
+# shell such as /bin/bash (or just bash) to use its syntax, e.g. process
+# substitution. zsh and fish reject unquoted globs such as
+# --query Reservations[*], so prefer bash. Ignored on Windows.
+shell =
+
 # log_file location.
 log_file = ~/.saws.log
 

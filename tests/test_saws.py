@@ -19,6 +19,7 @@ import mock
 import os
 import traceback
 from tests.compat import unittest
+from saws import aws_env
 from saws.saws import Saws
 from saws.commands import AwsCommands
 
@@ -131,15 +132,21 @@ class SawsTest(unittest.TestCase):
         INVAL_CMD = 'foo'
         self.saws._process_command(INVAL_CMD)
         mock_subprocess.call.assert_called_with(INVAL_CMD,
-                                                shell=True)
+                                                shell=True,
+                                                executable=self.saws.shell,
+                                                env=aws_env())
         self.saws._process_command(AwsCommands.AWS_COMMAND)
         mock_subprocess.call.assert_called_with(AwsCommands.AWS_COMMAND,
-                                                shell=True)
+                                                shell=True,
+                                                executable=self.saws.shell,
+                                                env=aws_env())
         self.saws.set_color(True)
         colorized_command = AwsCommands.AWS_COMMAND + self.saws.PYGMENTS_CMD
         self.saws._process_command(AwsCommands.AWS_COMMAND)
         mock_subprocess.call.assert_called_with(colorized_command,
-                                                shell=True)
+                                                shell=True,
+                                                executable=self.saws.shell,
+                                                env=aws_env())
 
     def test_handle_keyboard_interrupt(self):
         e = KeyboardInterrupt('')

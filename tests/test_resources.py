@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 import mock
 from tests.compat import unittest
+from tests.resource_fixture import use_temp_resources_file
 from saws.saws import Saws
 
 
@@ -41,7 +42,7 @@ class ResourcesTest(unittest.TestCase):
     def create_resources(self):
         self.saws = Saws(refresh_resources=False)
         self.resources = self.saws.completer.resources
-        self.resources._set_resources_path('data/RESOURCES_SAMPLE.txt')
+        use_temp_resources_file(self, self.resources, 'RESOURCES_SAMPLE.txt')
 
     def verify_resources(self):
         for resource_list, sample_resource_count in zip(
@@ -50,9 +51,11 @@ class ResourcesTest(unittest.TestCase):
             assert len(resource_list.resources) == sample_resource_count
 
     # TODO: Silence output
+    @mock.patch('saws.resource.resource.subprocess.check_output',
+                return_value='')
     @mock.patch('saws.resources.print')
-    def test_refresh_forced(self, mock_print):
-        self.resources._set_resources_path('data/RESOURCES_FORCED.txt')
+    def test_refresh_forced(self, mock_print, mock_check_output):
+        use_temp_resources_file(self, self.resources, None)
         self.resources.clear_resources()
         self.resources.refresh(force_refresh=True)
         mock_print.assert_called_with('Done refreshing')

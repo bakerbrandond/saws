@@ -1,0 +1,9 @@
+.*
+*.egg*
+dist/
+build/
+**/__pycache__
+saws/data/RESOURCES*.txt
+!saws/data/RESOURCES_SAMPLE.txt
+tests/
+docs/

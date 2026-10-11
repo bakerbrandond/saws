@@ -15,8 +15,14 @@
 
 from __future__ import unicode_literals
 import unittest
-import pip
 import pexpect
+try:
+    from importlib.metadata import version
+except ImportError:  # Python 2
+    from pkg_resources import get_distribution
+
+    def version(name):
+        return get_distribution(name).version
 
 
 class CliTest(unittest.TestCase):
@@ -32,8 +38,7 @@ class CliTest(unittest.TestCase):
         """
         Make sure saws is in installed packages.
         """
-        dists = set([di.key for di in pip.get_installed_distributions()])
-        assert 'saws' in dists
+        assert version('saws')
 
     def step_run_cli(self):
         """

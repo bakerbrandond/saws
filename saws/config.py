@@ -40,6 +40,8 @@ class Config(object):
         * FUZZY: A string that represents the config fuzzy matching mode.
         * SHORTCUT: A string that represents the config shortcut matching
              mode.
+        * SHELL: A string that represents the config shell used to run
+            commands.
     """
 
     SHORTCUTS = 'shortcuts'
@@ -50,6 +52,7 @@ class Config(object):
     COLOR = 'color_output'
     FUZZY = 'fuzzy_match'
     SHORTCUT = 'shortcut_match'
+    SHELL = 'shell'
 
     def get_shortcuts(self, config_obj):
         """Gets the shortcuts from the specified config.
