@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 import subprocess
 from abc import ABCMeta, abstractmethod
+from .. import aws_env
 
 
 class Resource():
@@ -95,4 +96,5 @@ class Resource():
         """
         return subprocess.check_output(query,
                                        universal_newlines=True,
-                                       shell=True)
+                                       shell=True,
+                                       env=aws_env())

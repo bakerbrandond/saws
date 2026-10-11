@@ -18,6 +18,8 @@ from __future__ import print_function
 import click
 import os
 import platform
+import shutil
+import six
 import subprocess
 import traceback
 import webbrowser
@@ -42,24 +44,44 @@ from .keys import KeyManager
 from .toolbar import Toolbar
 from .commands import AwsCommands
 from .logger import SawsLogger
-from .__init__ import __version__
+from . import __version__, aws_env
 
 
-def shell_executable():
+try:
+    _which = shutil.which
+except AttributeError:  # Python 2
+    from distutils.spawn import find_executable as _which
+
+
+def shell_executable(configured_shell):
     """Gets the shell used to run commands.
 
-    On POSIX, commands run in the user's own $SHELL so its syntax works
-    (for example bash process substitution). Windows has no /bin/sh, so
-    the platform default shell is used there.
+    Commands run in /bin/sh unless the user opts into another shell with the
+    `shell` option in ~/.sawsrc (for example to use bash process
+    substitution). The login shell ($SHELL) is deliberately ignored: zsh and
+    fish reject unquoted globs such as --query Reservations[*].
 
     Args:
-        * None.
+        * configured_shell: The `shell` config option: an absolute path, a
+            path relative to the startup directory or ~, or a bare name to
+            look up on PATH.
 
     Returns:
-        A string path to the shell, or None to use the platform default.
+        An absolute path to an executable shell, or None to use the
+            platform default. The path is absolute so a later `cd` cannot
+            change which file runs.
     """
-    if os.name == 'posix':
-        return os.getenv('SHELL') or None
+    if os.name != 'posix' or not configured_shell or \
+            not isinstance(configured_shell, six.string_types):
+        return None
+    shell = os.path.expanduser(configured_shell)
+    if os.sep not in shell:
+        shell = _which(shell)
+        if shell is None:
+            return None
+    shell = os.path.abspath(shell)
+    if os.path.isfile(shell) and os.access(shell, os.X_OK):
+        return shell
     return None
 
 
@@ -101,6 +123,7 @@ class Saws(object):
             __name__,
             self.config_obj[self.config.MAIN][self.config.LOG_FILE],
             self.config_obj[self.config.MAIN][self.config.LOG_LEVEL]).logger
+        self.shell = self._resolve_shell()
         self.all_commands = AwsCommands().all_commands
         self.commands = \
             self.all_commands[AwsCommands.CommandType.COMMANDS.value]
@@ -134,6 +157,28 @@ class Saws(object):
         self.logger.error("traceback: %r", traceback.format_exc())
         if echo:
             click.secho(str(e), fg='red')
+
+    def _resolve_shell(self):
+        """Resolves the `shell` config option, warning if it is unusable.
+
+        Args:
+            * None.
+
+        Returns:
+            An absolute path to the configured shell, or None for /bin/sh.
+        """
+        if os.name != 'posix':
+            return None
+        configured_shell = self.config_obj[self.config.MAIN].get(
+            self.config.SHELL, '')
+        shell = shell_executable(configured_shell)
+        # ConfigObj returns a list (possibly empty) for values with commas.
+        if configured_shell != '' and shell is None:
+            message = ('Ignoring shell = {0} in ~/.sawsrc: not an executable '
+                       'file, using /bin/sh').format(configured_shell)
+            self.logger.warning(message)
+            click.secho(message, fg='yellow', err=True)
+        return shell
 
     def set_color(self, color):
         """Setter for color output mode.
@@ -404,8 +449,8 @@ class Saws(object):
             if not self._handle_cd(text):
                 text = self._colorize_output(text)
                 # Pass the command onto the shell so aws-cli can execute it
-                subprocess.call(text, shell=True,
-                                executable=shell_executable())
+                subprocess.call(text, shell=True, executable=self.shell,
+                                env=aws_env())
             print('')
         except KeyboardInterrupt as e:
             self._handle_keyboard_interrupt(e, platform.system())
