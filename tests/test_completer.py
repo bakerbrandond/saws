@@ -23,6 +23,7 @@ from awscli import completer as awscli_completer
 from saws.completer import AwsCompleter
 from saws.commands import AwsCommands
 from saws.saws import Saws
+from tests.resource_fixture import use_temp_resources_file
 
 
 class CompleterTest(unittest.TestCase):
@@ -31,8 +32,8 @@ class CompleterTest(unittest.TestCase):
     def setUp(self, mock_print):
         self.saws = Saws(refresh_resources=False)
         self.completer = self.create_completer()
-        self.completer.resources._set_resources_path(
-            'data/RESOURCES_SAMPLE.txt')
+        use_temp_resources_file(self, self.completer.resources,
+                                'RESOURCES_SAMPLE.txt')
         self.completer.refresh_resources_and_options()
         self.completer_event = self.create_completer_event()
         mock_print.assert_called_with('Loaded resources from cache')
@@ -93,8 +94,8 @@ class CompleterTest(unittest.TestCase):
                     'efs',
                     'elasticache',
                     'elasticbeanstalk',
-                    'elastictranscoder',
                     'elb',
+                    'elbv2',
                     'emr']
         self.verify_completions(commands, expected)
 
