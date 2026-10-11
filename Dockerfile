@@ -1,12 +1,13 @@
-FROM ubuntu:latest
+FROM python:3.13-slim
 
+# groff and less are needed by `aws help`
 RUN set -xe \
   && apt-get update -y \
-  && apt-get install -y python3-pip \
+  && apt-get install -y --no-install-recommends groff less \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --upgrade pip
-RUN pip3 install saws
+COPY . /src
+RUN pip install --no-cache-dir /src
 
 ENTRYPOINT ["saws"]
