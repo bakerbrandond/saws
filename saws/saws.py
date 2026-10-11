@@ -45,6 +45,24 @@ from .logger import SawsLogger
 from .__init__ import __version__
 
 
+def shell_executable():
+    """Gets the shell used to run commands.
+
+    On POSIX, commands run in the user's own $SHELL so its syntax works
+    (for example bash process substitution). Windows has no /bin/sh, so
+    the platform default shell is used there.
+
+    Args:
+        * None.
+
+    Returns:
+        A string path to the shell, or None to use the platform default.
+    """
+    if os.name == 'posix':
+        return os.getenv('SHELL') or None
+    return None
+
+
 class Saws(object):
     """Encapsulates the Saws CLI.
 
@@ -386,7 +404,8 @@ class Saws(object):
             if not self._handle_cd(text):
                 text = self._colorize_output(text)
                 # Pass the command onto the shell so aws-cli can execute it
-                subprocess.call(text, shell=True, executable=os.getenv("SHELL", "/bin/sh"))
+                subprocess.call(text, shell=True,
+                                executable=shell_executable())
             print('')
         except KeyboardInterrupt as e:
             self._handle_keyboard_interrupt(e, platform.system())
