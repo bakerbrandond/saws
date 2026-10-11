@@ -63,7 +63,7 @@ Note:  [Pipsi might not be fully supported on Windows](https://github.com/mitsuh
 
 ## Docker Installation
 
-`SAWS` can be run from docker without additional dependencies. Assuming docker is installed and configured, the docker image can be built by running the following from the root of a `SAWS` source checkout. The [Dockerfile](https://github.com/donnemartin/saws/blob/master/Dockerfile) installs `SAWS` from that source on `python:3.13-slim`, not from PyPI:
+`SAWS` can be run from docker without additional dependencies. Assuming docker is installed and configured, the docker image can be built by running the following from the root of a `SAWS` source checkout. The [Dockerfile](Dockerfile) installs `SAWS` from that source on `python:3.13-slim`, not from PyPI:
 
     docker build -t saws .
 
